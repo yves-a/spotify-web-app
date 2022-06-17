@@ -22,8 +22,6 @@ jobs:
           node-version: '16'
       - name: npm install
         run: npm install
-      - name: npm run all install
-        run: npm i npm-run-all
       - name: lint
         run: npm run eslint
       - name: e2e tests
