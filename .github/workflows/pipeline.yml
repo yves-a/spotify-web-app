@@ -36,9 +36,9 @@ jobs:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: 'spotify-web-app-yves' #Must be unique in Heroku
           heroku_email: 'yalikalfic@yahoo.com'
-          healthcheck: 'https://spotify-web-app-yves.herokuapp.com/auth/health'
-          checkstring: 'ok'
-          rollbackonhealthcheckfailed: true
+          # healthcheck: 'https://spotify-web-app-yves.herokuapp.com/auth/health'
+          # checkstring: 'ok'
+          # rollbackonhealthcheckfailed: true
   tag_release:
     needs: [simple_deployment_pipeline]
     if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip')}}
