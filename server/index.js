@@ -29,7 +29,7 @@ var app = express()
 // eslint-disable-next-line no-undef
 // app.use(express.static(path.join(__dirname, '../build')))
 
-app.get('/health', (req, res) => {
+app.get('/auth/health', (req, res) => {
   res.send('ok')
 })
 
