@@ -1,7 +1,7 @@
 const express = require('express')
 const request = require('request')
 const dotenv = require('dotenv')
-const port = 5003
+const port = process.env.PORT || 5003
 
 var access_token = ''
 
@@ -26,6 +26,8 @@ var generateRandomString = function (length) {
 }
 
 var app = express()
+// eslint-disable-next-line no-undef
+// app.use(express.static(path.join(__dirname, '../build')))
 
 app.get('/health', (req, res) => {
   res.send('ok')
