@@ -18,7 +18,8 @@
     "server": "node server",
     "dev": "run-p server start",
     "test:e2e": "cypress run",
-    "eslint": "eslint './**/*.{js,jsx}'"
+    "eslint": "eslint './**/*.{js,jsx}'",
+    "start-prod": "node server"
   },
   "browserslist": {
     "production": [
