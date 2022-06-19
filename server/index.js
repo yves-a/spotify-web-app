@@ -1,5 +1,6 @@
+/* eslint-disable no-console */
 const express = require('express')
-const request = require('request')
+const axios = require('axios')
 const dotenv = require('dotenv')
 const port = process.env.PORT || 5003
 
@@ -54,31 +55,30 @@ app.get('/auth/login', (req, res) => {
 
 app.get('/auth/callback', (req, res) => {
   var code = req.query.code
-
-  var authOptions = {
-    url: 'https://accounts.spotify.com/api/token',
-    form: {
-      code: code,
-      redirect_uri: spotify_redirect_uri,
-      grant_type: 'authorization_code',
-    },
-    headers: {
-      Authorization:
-        'Basic ' +
-        Buffer.from(spotify_client_id + ':' + spotify_client_secret).toString(
-          'base64'
-        ),
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    json: true,
-  }
-
-  request.post(authOptions, function (error, response, body) {
-    if (!error && response.statusCode === 200) {
-      access_token = body.access_token
-      res.redirect('/')
-    }
+  const data = new URLSearchParams({
+    code: code,
+    redirect_uri: spotify_redirect_uri,
+    grant_type: 'authorization_code',
   })
+  const headers = {
+    Authorization:
+      'Basic ' +
+      Buffer.from(spotify_client_id + ':' + spotify_client_secret).toString(
+        'base64'
+      ),
+    'Content-Type': 'application/x-www-form-urlencoded',
+  }
+  axios
+    .post('https://accounts.spotify.com/api/token', data, {
+      headers: headers,
+    })
+    .then((response) => {
+      if (response.status === 200) {
+        access_token = response.data.access_token
+        res.redirect('/')
+      }
+    })
+    .catch((error) => console.log(error, 'callback'))
 })
 
 app.get('/auth/token', (req, res) => {
@@ -90,89 +90,102 @@ app.get('/auth/tracks', (req, res) => {
     limit: 10,
     time_range: 'short_term',
   })
-
-  var userOptions = {
-    url: 'https://api.spotify.com/v1/me/top/tracks?' + top_query_parameters,
-    headers: { Authorization: 'Bearer ' + access_token },
-    json: true,
+  const headers = {
+    Authorization: 'Bearer ' + access_token,
   }
   // use the access token to access the Spotify Web API
-  request.get(userOptions, function (error, response, body) {
-    const listOfSongUris = body.items.map((song) => song.uri)
-    songUris = listOfSongUris.join()
-    res.json({ body })
-  })
+  axios
+    .get('https://api.spotify.com/v1/me/top/tracks?' + top_query_parameters, {
+      headers: headers,
+    })
+    .then((response) => {
+      if (response.status === 200) {
+        const listOfSongUris = response.data.items.map((song) => song.uri)
+        songUris = listOfSongUris.join()
+        res.json({ body: response.data })
+      }
+    })
+    .catch((error) => console.log(error, 'tracks'))
 })
 
 app.get('/auth/playlist', (req, res) => {
-  var playlistOptions = {
-    url: `https://api.spotify.com/v1/users/${userId}/playlists`,
-    body: {
-      name: `Top Songs of this Month for ${userId} by Spotify Web App`,
-      description: 'Made by Spotify Web App',
-    },
-    headers: { Authorization: 'Bearer ' + access_token },
-    json: true,
+  const headers = { Authorization: 'Bearer ' + access_token }
+  const data = {
+    name: `Top Songs of this Month for ${userId} by Spotify Web App`,
+    description: 'Made by Spotify Web App',
   }
-
   var song_paramters = new URLSearchParams({
     position: 0,
     uris: songUris,
   })
-  var songOptions = {
-    url: `https://api.spotify.com/v1/playlists/${playlistID}/tracks`,
-    headers: { Authorization: 'Bearer ' + access_token },
-    json: true,
-  }
   // use the access token to access the Spotify Web API
-  request.post(playlistOptions, function (error, response, body) {
-    if (!error && response.statusCode === 201) {
-      playlistID = body.id
-      songOptions.url =
-        `https://api.spotify.com/v1/playlists/${playlistID}/tracks?` +
-        song_paramters
-      request.post(songOptions, function (error, response) {
-        if (!error && response.statusCode === 201) {
-          res.redirect('/')
-        }
-      })
-    }
-  })
+  axios
+    .post(`https://api.spotify.com/v1/users/${userId}/playlists`, data, {
+      headers: headers,
+    })
+    .then((response) => {
+      if (response.status === 201) {
+        playlistID = response.data.id
+        axios
+          .post(
+            `https://api.spotify.com/v1/playlists/${playlistID}/tracks?` +
+              song_paramters,
+            {},
+            {
+              headers: headers,
+            }
+          )
+          .then((response) => {
+            if (response.status === 201) {
+              res.redirect('/')
+            }
+          })
+          .catch((error) =>
+            console.log(error.request.headers, 'add song playlist')
+          )
+      }
+    })
+    .catch((error) => console.log(error, 'create playlist'))
 })
 
 app.get('/auth/userPlaylists', (req, res) => {
-  var userOptions = {
-    url: 'https://api.spotify.com/v1/me/playlists',
-    headers: { Authorization: 'Bearer ' + access_token },
-    json: true,
-  }
-  // use the access token to access the Spotify Web API
-  request.get(userOptions, function (error, response, body) {
-    const playlists = body.items
-    var madePlaylist = false
-    if (playlistID) {
-      playlists.forEach((playlist) => {
-        if (playlist.id === playlistID) {
-          madePlaylist = true
+  const headers = { Authorization: 'Bearer ' + access_token }
+  axios
+    .get('https://api.spotify.com/v1/me/playlists', {
+      headers: headers,
+    })
+    .then((response) => {
+      if (response.status === 200) {
+        const playlists = response.data.items
+        var madePlaylist = false
+        if (playlistID) {
+          playlists.forEach((playlist) => {
+            if (playlist.id === playlistID) {
+              madePlaylist = true
+            }
+          })
         }
-      })
-    }
 
-    res.json({ body, madePlaylist })
-  })
+        res.json({ body: response.data, madePlaylist })
+      }
+    })
+    .catch((error) => console.log(error, 'find playlist'))
 })
 
 app.get('/auth/user', (req, res) => {
-  var userOptions = {
-    url: 'https://api.spotify.com/v1/me',
-    headers: { Authorization: 'Bearer ' + access_token },
-    json: true,
-  }
-  // use the access token to access the Spotify Web API
-  request.get(userOptions, function (error, response, body) {
-    userId = body.id
-    res.json({ body })
-  })
+  const headers = { Authorization: 'Bearer ' + access_token }
+
+  axios
+    .get('https://api.spotify.com/v1/me', {
+      headers: headers,
+    })
+    .then((response) => {
+      if (response.status === 200) {
+        userId = response.data.id
+        res.json({ body: response.data })
+      }
+    })
+    .catch((error) => console.log(error, 'user'))
 })
 
 app.listen(port, () => {
