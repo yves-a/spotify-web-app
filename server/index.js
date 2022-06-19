@@ -1,12 +1,15 @@
 /* eslint-disable no-console */
 const express = require('express')
 const axios = require('axios')
-const dotenv = require('dotenv')
 const port = process.env.PORT || 5003
 
 var access_token = ''
 
-dotenv.config()
+if (process.env.NODE_ENV !== 'production') {
+  const dotenv = require('dotenv')
+  dotenv.config()
+}
+
 var userId
 var songUris
 var playlistID
