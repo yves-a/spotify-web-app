@@ -2,7 +2,7 @@
 const express = require('express')
 const axios = require('axios')
 const port = process.env.PORT || 5003
-
+const path = require('path')
 var access_token = ''
 
 var spotify_redirect_uri =
@@ -20,9 +20,6 @@ var playlistID
 var spotify_client_id = process.env.SPOTIFY_CLIENT_ID
 var spotify_client_secret = process.env.SPOTIFY_CLIENT_SECRET
 
-var spotify_redirect_uri =
-  'https://spotify-web-app-yves.herokuapp.com/auth/callback'
-
 var generateRandomString = function (length) {
   var text = ''
   var possible =
@@ -35,8 +32,10 @@ var generateRandomString = function (length) {
 }
 
 var app = express()
-// eslint-disable-next-line no-undef
-app.use(express.static(path.join(__dirname, '../build')))
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../build')))
+}
 
 app.get('/auth/health', (req, res) => {
   res.send('ok')
