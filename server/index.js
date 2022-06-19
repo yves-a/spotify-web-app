@@ -5,9 +5,13 @@ const port = process.env.PORT || 5003
 
 var access_token = ''
 
+var spotify_redirect_uri =
+  'https://spotify-web-app-yves.herokuapp.com/auth/callback'
+
 if (process.env.NODE_ENV !== 'production') {
   const dotenv = require('dotenv')
   dotenv.config()
+  spotify_redirect_uri = 'http://localhost:3000/auth/callback'
 }
 
 var userId
