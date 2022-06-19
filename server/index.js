@@ -16,7 +16,8 @@ var playlistID
 var spotify_client_id = process.env.SPOTIFY_CLIENT_ID
 var spotify_client_secret = process.env.SPOTIFY_CLIENT_SECRET
 
-var spotify_redirect_uri = 'http://localhost:3000/auth/callback'
+var spotify_redirect_uri =
+  'https://spotify-web-app-yves.herokuapp.com/auth/callback'
 
 var generateRandomString = function (length) {
   var text = ''
@@ -31,7 +32,7 @@ var generateRandomString = function (length) {
 
 var app = express()
 // eslint-disable-next-line no-undef
-// app.use(express.static(path.join(__dirname, '../build')))
+app.use(express.static(path.join(__dirname, '../build')))
 
 app.get('/auth/health', (req, res) => {
   res.send('ok')
