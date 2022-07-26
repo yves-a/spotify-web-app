@@ -13,12 +13,12 @@ const Login = () => {
         gutterBottom
         color="text.primary"
       >
-        Spotify Web App
+        Reminiscing Record Player
       </Typography>
       <Card sx={{ maxWidth: 300 }}>
         <CardContent>
           <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-            Check out your most listened to songs
+            Check out your most listened to songs in the past month
           </Typography>
           <Typography variant="body2">
             <Fab variant="extended">

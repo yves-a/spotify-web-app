@@ -64,7 +64,7 @@ const Album = ({ tracks }) => {
             )
           })}
         </Stack>
-        <Box>
+        <Box sx={{ minWidth: 550 }}>
           <img src={image} width="250px" height="250px"></img>
           <img src={vinyl} width="250" height="250"></img>
         </Box>
